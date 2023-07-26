@@ -5,6 +5,8 @@ This module contains the Locate module
 
 """
 import time
+from PiFinder import onstep_config
+from PiFinder import pos_server
 from PIL import ImageFont
 import logging
 
@@ -33,6 +35,12 @@ class UILocate(UIModule):
             "value": "",
             "options": ["CANCEL"],
             "callback": "load_list",
+        },
+        "Sync": {
+            "type": "enum",
+            "value": "",
+            "options": ["CANCEL", "Sync Position"],
+            "callback": "sync_current_position",
         },
     }
 
@@ -315,3 +323,26 @@ class UILocate(UIModule):
             self.ui_state["target"] = self.target
             self.update_object_text()
             self.update()
+    def sync_current_position(self,option):
+        self._config_options["Sync"]["value"] = ""
+        if option == "CANCEL":
+            return False
+
+        if not self.shared_state.solution():
+            self.message("No current solution")
+            return False
+
+        # sync
+        try:
+            ra = pos_server.get_telescope_ra(self.shared_state)
+            dec = pos_server.get_telescope_dec(self.shared_state)
+
+            onstep_config.scope.set_target_ra(ra)
+            onstep_config.scope.set_target_dec(dec)
+            sync = onstep_config.scope.sync()
+        except Exception as e:  # Replace Exception with the specific exception class, if known
+            self.message(f" {str(e)}")
+            return False
+
+        self.message(sync)
+        return True
