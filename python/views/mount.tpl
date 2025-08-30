@@ -1,5 +1,33 @@
 % include("header.tpl", title="Mount Control Configuration")
 
+<style>
+.input-field {
+  margin-bottom: 20px;
+}
+.input-field label {
+  top: -10px;
+  font-size: 0.8rem;
+  color: #9e9e9e;
+}
+.input-field input:focus + label,
+.input-field input:not([readonly]) + label {
+  color: #26a69a;
+}
+.helper-text {
+  margin-top: 5px;
+  font-size: 0.8rem;
+  color: #9e9e9e;
+}
+.card-content {
+  padding: 20px;
+}
+.card-content h6 {
+  margin-top: 20px;
+  margin-bottom: 15px;
+  font-weight: 500;
+}
+</style>
+
 <div class="row valign-wrapper" style="margin: 0px;">
   <div class="col s12">
     <h5 class="grey-text">Mount Control Configuration</h5>
