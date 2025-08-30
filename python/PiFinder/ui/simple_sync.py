@@ -135,15 +135,25 @@ class UISimpleSync(UIModule):
             fill=self.colors.get(255),
         )
 
-        # Display RA coordinates on one line
+        # Display RA coordinates on one line (in HH:MM:SS format)
         ra_text = "RA: "
         if mount_ra is not None:
-            ra_text += f"{mount_ra:.2f}°"
+            # Convert RA degrees to HH:MM:SS
+            ra_hours = mount_ra / 15
+            ra_h = int(ra_hours)
+            ra_m = int((ra_hours - ra_h) * 60)
+            ra_s = int(((ra_hours - ra_h) * 60 - ra_m) * 60)
+            ra_text += f"{ra_h:02d}:{ra_m:02d}:{ra_s:02d}"
         else:
             ra_text += "N/A"
         ra_text += " / "
         if current_ra is not None:
-            ra_text += f"{current_ra:.2f}°"
+            # Convert RA degrees to HH:MM:SS
+            ra_hours = current_ra / 15
+            ra_h = int(ra_hours)
+            ra_m = int((ra_hours - ra_h) * 60)
+            ra_s = int(((ra_hours - ra_h) * 60 - ra_m) * 60)
+            ra_text += f"{ra_h:02d}:{ra_m:02d}:{ra_s:02d}"
         else:
             ra_text += "N/A"
             
@@ -154,15 +164,27 @@ class UISimpleSync(UIModule):
             fill=self.colors.get(255),
         )
 
-        # Display DEC coordinates on one line
+        # Display DEC coordinates on one line (in DD:MM:SS format)
         dec_text = "DEC: "
         if mount_dec is not None:
-            dec_text += f"{mount_dec:.2f}°"
+            # Convert DEC degrees to DD:MM:SS
+            dec_sign = "+" if mount_dec >= 0 else "-"
+            dec_abs = abs(mount_dec)
+            dec_d = int(dec_abs)
+            dec_m = int((dec_abs - dec_d) * 60)
+            dec_s = int(((dec_abs - dec_d) * 60 - dec_m) * 60)
+            dec_text += f"{dec_sign}{dec_d:02d}:{dec_m:02d}:{dec_s:02d}"
         else:
             dec_text += "N/A"
         dec_text += " / "
         if current_dec is not None:
-            dec_text += f"{current_dec:.2f}°"
+            # Convert DEC degrees to DD:MM:SS
+            dec_sign = "+" if current_dec >= 0 else "-"
+            dec_abs = abs(current_dec)
+            dec_d = int(dec_abs)
+            dec_m = int((dec_abs - dec_d) * 60)
+            dec_s = int(((dec_abs - dec_d) * 60 - dec_m) * 60)
+            dec_text += f"{dec_sign}{dec_d:02d}:{dec_m:02d}:{dec_s:02d}"
         else:
             dec_text += "N/A"
             
