@@ -79,7 +79,8 @@ class AstroPhysicsMount:
             from datetime import datetime
             
             # Get current datetime for epoch conversion
-            current_dt = datetime.now()
+            from datetime import timezone
+            current_dt = datetime.now(timezone.utc)
             logger.info(f"Mount sync: Current datetime: {current_dt}")
             
             # Convert from J2000 to current epoch
