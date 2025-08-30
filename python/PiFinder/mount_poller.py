@@ -81,9 +81,22 @@ class MountPoller:
                     if position is not None:
                         mount_ra, mount_dec = position
                         if mount_ra is not None and mount_dec is not None:
+                            # Get previous position for comparison
+                            prev_position = self.shared_state.mount_position()
+                            prev_ra = prev_dec = None
+                            if prev_position:
+                                prev_ra, prev_dec = prev_position
+                            
                             # Store in shared state
                             self.shared_state.set_mount_position((mount_ra, mount_dec))
                             logger.info(f"Mount position updated: RA={mount_ra:.2f}°, DEC={mount_dec:.2f}°")
+                            
+                            # Log if position changed significantly
+                            if prev_ra is not None and prev_dec is not None:
+                                ra_diff = abs(mount_ra - prev_ra)
+                                dec_diff = abs(mount_dec - prev_dec)
+                                if ra_diff > 0.1 or dec_diff > 0.1:
+                                    logger.warning(f"Mount position changed significantly: RA diff={ra_diff:.2f}°, DEC diff={dec_diff:.2f}°")
                         else:
                             # Clear mount position if coordinates are None
                             self.shared_state.set_mount_position(None)

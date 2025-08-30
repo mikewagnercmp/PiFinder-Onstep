@@ -55,6 +55,8 @@ class UISimpleSync(UIModule):
 
     def update(self, force=True):
         """Update the display"""
+        logger.debug("Simple sync UI: update() called")
+        
         # Clear Screen
         self.clear_screen()
 
@@ -111,6 +113,14 @@ class UISimpleSync(UIModule):
             logger.info(f"Simple sync UI: Got mount position RA={mount_ra:.2f}°, DEC={mount_dec:.2f}°")
         else:
             logger.warning("Simple sync UI: No mount position in shared state")
+        
+        # Log the coordinate comparison
+        if current_ra is not None and current_dec is not None and mount_ra is not None and mount_dec is not None:
+            ra_diff = abs(current_ra - mount_ra)
+            dec_diff = abs(current_dec - mount_dec)
+            logger.info(f"Simple sync UI: Coordinate diff - RA: {ra_diff:.2f}°, DEC: {dec_diff:.2f}°")
+            if ra_diff > 1.0 or dec_diff > 1.0:
+                logger.warning(f"Simple sync UI: Large coordinate difference detected!")
 
         # Display coordinate headers
         self.draw.text(
@@ -229,8 +239,10 @@ class UISimpleSync(UIModule):
             self.last_sync_time = time.time()
 
             if success:
+                logger.info("Simple sync UI: Sync operation completed successfully")
                 self.message("Sync successful!", 2)
             else:
+                logger.error(f"Simple sync UI: Sync operation failed: {message}")
                 self.message(f"Sync failed: {message}", 3)
 
         except Exception as e:
