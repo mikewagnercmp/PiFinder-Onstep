@@ -69,17 +69,28 @@ def test_local_sync():
         print(f"Result: {success}, Message: {message}")
         
         if success:
-            # Wait and check new position
-            time.sleep(2)
+            # Wait for mount to settle after sync
+            time.sleep(0.5)
+            
+            # Check new position against the target we just synced to
             new_position = mount_api.get_position()
             if new_position:
                 new_ra, new_dec = new_position
                 ra_diff = abs(new_ra - test_ra)
                 dec_diff = abs(new_dec - test_dec)
-                print(f"New position: RA={new_ra:.2f}°, DEC={new_dec:.2f}°")
-                print(f"Difference: RA diff={ra_diff:.2f}°, DEC diff={dec_diff:.2f}°")
                 
-                if ra_diff < 1.0 and dec_diff < 1.0:
+                # Calculate great-circle angular separation for single metric
+                import math
+                ra_diff_rad = math.radians(ra_diff)
+                dec_diff_rad = math.radians(dec_diff)
+                angular_sep = math.sqrt(ra_diff_rad**2 + dec_diff_rad**2) * 3600  # arcseconds
+                
+                print(f"New position: RA={new_ra:.2f}°, DEC={new_dec:.2f}°")
+                print(f"Target: RA={test_ra:.2f}°, DEC={test_dec:.2f}°")
+                print(f"Difference: RA diff={ra_diff:.3f}°, DEC diff={dec_diff:.3f}°")
+                print(f"Angular separation: {angular_sep:.1f} arcseconds")
+                
+                if angular_sep < 60:  # Within 1 arcminute
                     print("✅ Sync successful - position matches target")
                 else:
                     print("⚠️  Sync completed but position doesn't match target")
@@ -112,15 +123,31 @@ def test_local_sync():
                 if "Matched" in cmr_response:
                     print("✅ :CMR# sync successful")
                     
-                    # Wait and check position
-                    time.sleep(2)
+                    # Wait for mount to settle after sync
+                    time.sleep(0.5)
+                    
+                    # Check position against the target we just synced to
                     final_position = mount_api.get_position()
                     if final_position:
                         final_ra, final_dec = final_position
                         ra_diff = abs(final_ra - test_ra)
                         dec_diff = abs(final_dec - test_dec)
+                        
+                        # Calculate great-circle angular separation
+                        import math
+                        ra_diff_rad = math.radians(ra_diff)
+                        dec_diff_rad = math.radians(dec_diff)
+                        angular_sep = math.sqrt(ra_diff_rad**2 + dec_diff_rad**2) * 3600  # arcseconds
+                        
                         print(f"Final position: RA={final_ra:.2f}°, DEC={final_dec:.2f}°")
-                        print(f"Difference: RA diff={ra_diff:.2f}°, DEC diff={dec_diff:.2f}°")
+                        print(f"Target: RA={test_ra:.2f}°, DEC={test_dec:.2f}°")
+                        print(f"Difference: RA diff={ra_diff:.3f}°, DEC diff={dec_diff:.3f}°")
+                        print(f"Angular separation: {angular_sep:.1f} arcseconds")
+                        
+                        if angular_sep < 60:  # Within 1 arcminute
+                            print("✅ :CMR# sync successful - position matches target")
+                        else:
+                            print("⚠️  :CMR# sync completed but position doesn't match target")
                 else:
                     print("❌ :CMR# sync failed")
             else:

@@ -159,9 +159,9 @@ class AstroPhysicsMount:
             if response and "Matched" in response:
                 logger.info(f"Sync successful to RA: {ra_str}, DEC: {dec_str}")
                 
-                # Wait a moment for mount to update its position
+                # Wait for mount to settle after sync
                 import time
-                time.sleep(1.0)
+                time.sleep(0.5)
                 
                 # Check if mount position updated
                 new_position = self.get_position()
