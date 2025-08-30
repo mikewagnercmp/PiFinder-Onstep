@@ -26,7 +26,7 @@
 
     <form method="post" action="/mount/update">
       <div class="row">
-        <div class="input-field col s12 m6">
+        <div class="input-field col s12">
           <select id="mount_type" name="mount_type">
             <option value="astro_physics" {{ 'selected' if mount_config.get('mount_type') == 'astro_physics' else '' }}>Astro Physics</option>
             <option value="onstep" {{ 'selected' if mount_config.get('mount_type') == 'onstep' else '' }}>OnStep</option>
@@ -36,15 +36,17 @@
       </div>
       
       <div class="row">
-        <div class="input-field col s12 m6">
+        <div class="input-field col s12">
           <input type="text" id="host" name="host" 
                  value="{{ mount_config.get('host', '192.168.1.100') }}" 
                  placeholder="192.168.1.100" required>
           <label for="host">Mount IP Address</label>
           <span class="helper-text">Enter the IP address of your mount</span>
         </div>
-        
-        <div class="input-field col s12 m6">
+      </div>
+      
+      <div class="row">
+        <div class="input-field col s12">
           <input type="number" id="port" name="port" 
                  value="{{ mount_config.get('port', 23) }}" 
                  min="1" max="65535" required>
@@ -54,7 +56,7 @@
       </div>
       
       <div class="row">
-        <div class="input-field col s12 m6">
+        <div class="input-field col s12">
           <label>
             <input type="checkbox" id="auto_sync_enabled" name="auto_sync_enabled" 
                    {{ 'checked' if mount_config.get('auto_sync_enabled', True) else '' }}>
@@ -62,8 +64,10 @@
           </label>
           <span class="helper-text">Automatically sync mount when position error exceeds threshold</span>
         </div>
-        
-        <div class="input-field col s12 m6">
+      </div>
+      
+      <div class="row">
+        <div class="input-field col s12">
           <input type="number" id="sync_threshold" name="sync_threshold" 
                  value="{{ mount_config.get('sync_threshold_arcmin', 2.0) }}" 
                  min="0.1" max="10.0" step="0.1" required>
@@ -73,15 +77,17 @@
       </div>
       
       <div class="row">
-        <div class="input-field col s12 m6">
+        <div class="input-field col s12">
           <input type="number" id="sync_cooldown" name="sync_cooldown" 
                  value="{{ mount_config.get('sync_cooldown_minutes', 5) }}" 
                  min="0" max="60" required>
           <label for="sync_cooldown">Sync Cooldown (minutes)</label>
           <span class="helper-text">Minimum time between syncs (0 - 60)</span>
         </div>
-        
-        <div class="input-field col s12 m6">
+      </div>
+      
+      <div class="row">
+        <div class="input-field col s12">
           <input type="number" id="slew_timeout" name="slew_timeout" 
                  value="{{ mount_config.get('slew_timeout_minutes', 10) }}" 
                  min="1" max="60" required>
@@ -91,7 +97,7 @@
       </div>
       
       <div class="row">
-        <div class="input-field col s12 m6">
+        <div class="input-field col s12">
           <input type="number" id="slew_completion_threshold" name="slew_completion_threshold" 
                  value="{{ mount_config.get('slew_completion_threshold_arcmin', 1.0) }}" 
                  min="0.1" max="5.0" step="0.1" required>
