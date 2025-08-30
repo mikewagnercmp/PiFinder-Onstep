@@ -104,7 +104,19 @@ class MountPoller:
         
         while self.running:
             try:
-                if self.mount_api and self.mount_api.mount and self.mount_api.mount.connected:
+                # Check if mount API is available and connected
+                if self.mount_api and self.mount_api.mount:
+                    # Test connection status before attempting to get position
+                    if not self.mount_api.mount.connected:
+                        logger.debug("Mount not connected, attempting to reconnect...")
+                        if self.mount_api.attempt_reconnection():
+                            logger.info("Mount poller: Successfully reconnected to mount")
+                        else:
+                            logger.warning("Mount poller: Failed to reconnect to mount")
+                            self.shared_state.set_mount_position(None)
+                            time.sleep(self.poll_interval)
+                            continue
+                    
                     # Get current mount position
                     position = self.mount_api.get_position()
                     

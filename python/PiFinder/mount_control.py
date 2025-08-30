@@ -71,6 +71,9 @@ class AstroPhysicsMount:
             ra_response = self.interface.send_command(":GR#")  # Get RA
             dec_response = self.interface.send_command(":GD#")  # Get Dec
             
+            # Debug: log raw responses
+            logger.debug(f"Mount responses - RA: '{ra_response}', DEC: '{dec_response}'")
+            
             # Parse responses (format: HH:MM:SS# for RA, sDD:MM:SS# for Dec)
             ra_deg = self._parse_ra(ra_response)
             dec_deg = self._parse_dec(dec_response)
