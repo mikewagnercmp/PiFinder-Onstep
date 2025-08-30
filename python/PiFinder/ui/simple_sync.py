@@ -218,13 +218,8 @@ class UISimpleSync(UIModule):
         self.message("Syncing...", 1)
 
         try:
-            # Convert to mount format
-            from PiFinder import calc_utils
-            ra_str = calc_utils.ra_to_hms_str(current_ra)
-            dec_str = calc_utils.dec_to_dms_str(current_dec)
-
-            # Perform sync
-            success, message = self.mount_api.sync_to_position(ra_str, dec_str)
+            # Perform sync with degrees (mount handles conversion internally)
+            success, message = self.mount_api.sync_to_position(current_ra, current_dec)
 
             self.sync_result = success
             self.last_sync_time = time.time()
