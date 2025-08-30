@@ -83,15 +83,15 @@ class MountPoller:
                         if mount_ra is not None and mount_dec is not None:
                             # Store in shared state
                             self.shared_state.set_mount_position((mount_ra, mount_dec))
-                            logger.debug(f"Mount position updated: RA={mount_ra:.2f}°, DEC={mount_dec:.2f}°")
+                            logger.info(f"Mount position updated: RA={mount_ra:.2f}°, DEC={mount_dec:.2f}°")
                         else:
                             # Clear mount position if coordinates are None
                             self.shared_state.set_mount_position(None)
-                            logger.debug("Mount position coordinates are None")
+                            logger.warning("Mount position coordinates are None")
                     else:
                         # Clear mount position if get_position returns None
                         self.shared_state.set_mount_position(None)
-                        logger.debug("Mount position not available")
+                        logger.warning("Mount position not available - get_position returned None")
                 else:
                     # Clear mount position if not connected
                     self.shared_state.set_mount_position(None)

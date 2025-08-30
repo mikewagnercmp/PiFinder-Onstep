@@ -108,81 +108,60 @@ class UISimpleSync(UIModule):
         
         if mount_position:
             mount_ra, mount_dec = mount_position
+            logger.info(f"Simple sync UI: Got mount position RA={mount_ra:.2f}°, DEC={mount_dec:.2f}°")
+        else:
+            logger.warning("Simple sync UI: No mount position in shared state")
 
-        # Display solved position (what PiFinder sees)
+        # Display coordinate headers
         self.draw.text(
             (10, 40),
-            "Solved:",
+            "Mount / Solved:",
             font=self.fonts.base.font,
             fill=self.colors.get(255),
         )
-        
-        if current_ra is not None and current_dec is not None:
-            self.draw.text(
-                (10, 55),
-                f"RA: {current_ra:.2f}°",
-                font=self.fonts.base.font,
-                fill=self.colors.get(255),
-            )
-            self.draw.text(
-                (10, 70),
-                f"DEC: {current_dec:.2f}°",
-                font=self.fonts.base.font,
-                fill=self.colors.get(255),
-            )
-        else:
-            self.draw.text(
-                (10, 55),
-                "RA: N/A",
-                font=self.fonts.base.font,
-                fill=self.colors.get(128),
-            )
-            self.draw.text(
-                (10, 70),
-                "DEC: N/A",
-                font=self.fonts.base.font,
-                fill=self.colors.get(128),
-            )
 
-        # Display mount position (what mount thinks)
+        # Display RA coordinates on one line
+        ra_text = "RA: "
+        if mount_ra is not None:
+            ra_text += f"{mount_ra:.2f}°"
+        else:
+            ra_text += "N/A"
+        ra_text += " / "
+        if current_ra is not None:
+            ra_text += f"{current_ra:.2f}°"
+        else:
+            ra_text += "N/A"
+            
         self.draw.text(
-            (10, 90),
-            "Mount:",
+            (10, 55),
+            ra_text,
             font=self.fonts.base.font,
             fill=self.colors.get(255),
         )
-        
-        if mount_ra is not None and mount_dec is not None:
-            self.draw.text(
-                (10, 105),
-                f"RA: {mount_ra:.2f}°",
-                font=self.fonts.base.font,
-                fill=self.colors.get(255),
-            )
-            self.draw.text(
-                (10, 120),
-                f"DEC: {mount_dec:.2f}°",
-                font=self.fonts.base.font,
-                fill=self.colors.get(255),
-            )
+
+        # Display DEC coordinates on one line
+        dec_text = "DEC: "
+        if mount_dec is not None:
+            dec_text += f"{mount_dec:.2f}°"
         else:
-            self.draw.text(
-                (10, 105),
-                "RA: N/A",
-                font=self.fonts.base.font,
-                fill=self.colors.get(128),
-            )
-            self.draw.text(
-                (10, 120),
-                "DEC: N/A",
-                font=self.fonts.base.font,
-                fill=self.colors.get(128),
-            )
+            dec_text += "N/A"
+        dec_text += " / "
+        if current_dec is not None:
+            dec_text += f"{current_dec:.2f}°"
+        else:
+            dec_text += "N/A"
+            
+        self.draw.text(
+            (10, 70),
+            dec_text,
+            font=self.fonts.base.font,
+            fill=self.colors.get(255),
+        )
 
         # Display sync status
         if self.sync_in_progress:
             self.draw.text(
-                (10, 140),
+                (10, 90),
                 "SYNCING...",
                 font=self.fonts.large.font,
                 fill=self.colors.get(255),
@@ -190,14 +169,14 @@ class UISimpleSync(UIModule):
         elif self.sync_result is not None:
             if self.sync_result:
                 self.draw.text(
-                    (10, 140),
+                    (10, 90),
                     "SYNC SUCCESS!",
                     font=self.fonts.large.font,
                     fill=self.colors.get(255),
                 )
             else:
                 self.draw.text(
-                    (10, 140),
+                    (10, 90),
                     "SYNC FAILED",
                     font=self.fonts.large.font,
                     fill=self.colors.get(128),
@@ -205,7 +184,7 @@ class UISimpleSync(UIModule):
 
         # Display instructions
         self.draw.text(
-            (10, 160),
+            (10, 110),
             "Press RIGHT to sync",
             font=self.fonts.base.font,
             fill=self.colors.get(255),
