@@ -255,6 +255,14 @@ class UISimpleSync(UIModule):
         self.message("Syncing...", 1)
 
         try:
+            # Log mount position before sync
+            mount_position_before = self.mount_api.get_position()
+            if mount_position_before:
+                mount_ra_before, mount_dec_before = mount_position_before
+                logger.info(f"Mount position BEFORE sync: RA={mount_ra_before:.6f}°, DEC={mount_dec_before:.6f}°")
+            else:
+                logger.warning("Could not get mount position before sync")
+            
             logger.info(f"Attempting sync to RA: {current_ra:.6f}°, DEC: {current_dec:.6f}°")
             
             # Perform sync with degrees (mount handles conversion internally)
@@ -266,6 +274,21 @@ class UISimpleSync(UIModule):
             self.last_sync_time = time.time()
 
             if success:
+                # Log mount position after successful sync
+                time.sleep(0.5)  # Wait for mount to settle
+                mount_position_after = self.mount_api.get_position()
+                if mount_position_after:
+                    mount_ra_after, mount_dec_after = mount_position_after
+                    logger.info(f"Mount position AFTER sync: RA={mount_ra_after:.6f}°, DEC={mount_dec_after:.6f}°")
+                    
+                    # Calculate differences
+                    if mount_position_before:
+                        ra_diff = abs(mount_ra_after - mount_ra_before)
+                        dec_diff = abs(mount_dec_after - mount_dec_before)
+                        logger.info(f"Mount position change: RA diff={ra_diff:.6f}°, DEC diff={dec_diff:.6f}°")
+                else:
+                    logger.warning("Could not get mount position after sync")
+                
                 logger.info("Simple sync UI: Sync operation completed successfully")
                 self.message("Sync successful!", 2)
             else:

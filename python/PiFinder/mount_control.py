@@ -51,13 +51,9 @@ class AstroPhysicsMount:
             ra_response = self.interface.send_command(":GR#")  # Get RA
             dec_response = self.interface.send_command(":GD#")  # Get Dec
             
-            logger.info(f"Mount responses - RA: '{ra_response}', DEC: '{dec_response}'")
-            
             # Parse responses (format: HH:MM:SS# for RA, sDD:MM:SS# for Dec)
             ra_deg = self._parse_ra(ra_response)
             dec_deg = self._parse_dec(dec_response)
-            
-            logger.info(f"Parsed coordinates - RA: {ra_deg}, DEC: {dec_deg}")
             
             if ra_deg is not None and dec_deg is not None:
                 return (ra_deg, dec_deg)

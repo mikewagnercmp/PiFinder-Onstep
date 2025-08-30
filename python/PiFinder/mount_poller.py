@@ -111,13 +111,12 @@ class MountPoller:
                             
                             # Store in shared state
                             self.shared_state.set_mount_position((mount_ra, mount_dec))
-                            logger.info(f"Mount position updated: RA={mount_ra:.2f}°, DEC={mount_dec:.2f}°")
                             
-                            # Log if position changed significantly
+                            # Log if position changed significantly (only for large changes)
                             if prev_ra is not None and prev_dec is not None:
                                 ra_diff = abs(mount_ra - prev_ra)
                                 dec_diff = abs(mount_dec - prev_dec)
-                                if ra_diff > 0.1 or dec_diff > 0.1:
+                                if ra_diff > 1.0 or dec_diff > 1.0:  # Only log significant changes (>1 degree)
                                     logger.warning(f"Mount position changed significantly: RA diff={ra_diff:.2f}°, DEC diff={dec_diff:.2f}°")
                             
                             # Reset error counter on successful communication
@@ -125,11 +124,11 @@ class MountPoller:
                         else:
                             # Clear mount position if coordinates are None
                             self.shared_state.set_mount_position(None)
-                            logger.warning("Mount position coordinates are None")
+                            logger.debug("Mount position coordinates are None")
                     else:
                         # Clear mount position if get_position returns None
                         self.shared_state.set_mount_position(None)
-                        logger.warning("Mount position not available - get_position returned None")
+                        logger.debug("Mount position not available - get_position returned None")
                 else:
                     # Clear mount position if not connected
                     self.shared_state.set_mount_position(None)
