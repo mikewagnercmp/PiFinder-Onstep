@@ -1,17 +1,5 @@
 % include("header.tpl", title="Mount Control Configuration")
 
-<style>
-.input-field {
-  margin-bottom: 20px;
-}
-.input-field label {
-  margin-top: 10px;
-}
-.helper-text {
-  margin-top: 5px;
-}
-</style>
-
 <div class="row valign-wrapper" style="margin: 0px;">
   <div class="col s12">
     <h5 class="grey-text">Mount Control Configuration</h5>
@@ -36,7 +24,7 @@
     </div>
     % end
 
-    <form method="post" action="/mount/update">
+    <form method="post" action="/mount/update" class="col s12">
       <div class="row">
         <div class="input-field col s12">
           <select id="mount_type" name="mount_type">
@@ -117,18 +105,11 @@
           <span class="helper-text">Position accuracy for slew completion (0.1 - 5.0)</span>
         </div>
       </div>
-      
-      <div class="row">
-        <div class="col s12">
-          <button type="submit" class="waves-effect waves-light btn">
-            <i class="material-icons left">save</i>Save Configuration
-          </button>
-          <a href="/" class="waves-effect waves-light btn grey">
-            <i class="material-icons left">arrow_back</i>Back to Home
-          </a>
-        </div>
-      </div>
     </form>
+  </div>
+  <div class="card-action">
+    <a href="#" class="btn" onclick="document.querySelector('form').submit();">Save Configuration</a>
+    <a href="/" class="btn grey">Back to Home</a>
   </div>
 </div>
 
