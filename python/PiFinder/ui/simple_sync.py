@@ -110,22 +110,8 @@ class UISimpleSync(UIModule):
         
         if mount_position:
             mount_ra, mount_dec = mount_position
-            logger.info(f"Simple sync UI: Got mount position RA={mount_ra:.2f}°, DEC={mount_dec:.2f}°")
         else:
-            logger.warning("Simple sync UI: No mount position in shared state")
-        
-        # Log the coordinate comparison
-        if current_ra is not None and current_dec is not None and mount_ra is not None and mount_dec is not None:
-            ra_diff = abs(current_ra - mount_ra)
-            dec_diff = abs(current_dec - mount_dec)
-            logger.info(f"Simple sync UI: Coordinate diff - RA: {ra_diff:.2f}°, DEC: {dec_diff:.2f}°")
-            if ra_diff > 1.0 or dec_diff > 1.0:
-                logger.warning(f"Simple sync UI: Large coordinate difference detected!")
-                
-        # Log sync timing info
-        if hasattr(self, 'last_sync_time') and self.last_sync_time:
-            time_since_sync = time.time() - self.last_sync_time
-            logger.info(f"Simple sync UI: Time since last sync: {time_since_sync:.1f}s")
+            mount_ra = mount_dec = None
 
         # Display coordinate headers (moved up to save space)
         self.draw.text(
