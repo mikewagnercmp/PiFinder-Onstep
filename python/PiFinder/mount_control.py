@@ -105,19 +105,8 @@ class AstroPhysicsMount:
             logger.info(f"Mount sync: Mount timezone offset: '{mount_timezone}'")
             
             # Convert degrees to mount format (HH:MM:SS and sDD:MM:SS)
-            # Apply 12-hour offset fix: mount interprets coordinates with 12-hour offset
+            # Convert to mount format without 12-hour offset
             ra_str = self._degrees_to_ra(current_ra_deg)
-            
-            # Parse the RA string and apply 12-hour offset
-            ra_parts = ra_str.split(':')
-            ra_h = int(ra_parts[0])
-            ra_m = int(ra_parts[1])
-            ra_s = int(ra_parts[2])
-            
-            # Apply 12-hour offset (subtract 12 hours)
-            ra_h = (ra_h - 12) % 24
-            ra_str = f"{ra_h:02d}:{ra_m:02d}:{ra_s:02d}"
-            
             dec_str = self._degrees_to_dec(current_dec_deg)
             
             logger.info(f"Mount sync: converting {current_ra_deg:.6f}°, {current_dec_deg:.6f}° to {ra_str}, {dec_str}")
@@ -151,11 +140,10 @@ class AstroPhysicsMount:
             # The mount should have received our commanded coordinates via :Sr and :Sd
             logger.info("Mount sync: Commanded coordinates set via :Sr and :Sd")
             
-            # Determine if this is initial calibration or re-calibration
-            # For now, we'll use :CM# (initial calibration) to establish baseline
-            # In a future version, we could track if this is the first sync
-            sync_command = ":CM#"
-            logger.info(f"Mount sync: sending initial calibration command '{sync_command}'")
+            # Use :CMR# for re-calibration (subsequent syncs)
+            # :CM# is for initial calibration, :CMR# is for re-calibration
+            sync_command = ":CMR#"
+            logger.info(f"Mount sync: sending re-calibration command '{sync_command}'")
             
             response = self.interface.send_command(sync_command)
             logger.info(f"Mount sync: received response '{response}'")
