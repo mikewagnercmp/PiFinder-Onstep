@@ -40,6 +40,26 @@ class AstroPhysicsMount:
             self.connected = False
             return False
     
+    def attempt_reconnection(self) -> bool:
+        """Attempt to reconnect to the mount"""
+        logger.info("Attempting to reconnect to mount...")
+        try:
+            # Close existing connection
+            if hasattr(self, 'interface') and self.interface:
+                self.interface.close()
+            
+            # Reinitialize the interface
+            from PiFinder import tcp_interface
+            self.interface = tcp_interface.TCPInterface(self.host, self.port)
+            
+            # Test the new connection
+            return self.test_connection()
+            
+        except Exception as e:
+            logger.error(f"Failed to reconnect to mount: {e}")
+            self.connected = False
+            return False
+    
     def get_position(self) -> Optional[Tuple[float, float]]:
         """Get current mount position (RA, Dec) in degrees"""
         if not self.connected:
@@ -63,6 +83,8 @@ class AstroPhysicsMount:
             
         except Exception as e:
             logger.error(f"Error getting mount position: {e}")
+            # Mark as disconnected on communication error
+            self.connected = False
             return None
     
     def sync_to_position(self, ra_deg: float, dec_deg: float) -> tuple[bool, str]:
@@ -500,3 +522,24 @@ class MountControlAPI:
     def close(self):
         """Close the mount connection"""
         self.disconnect()
+    
+    def attempt_reconnection(self) -> bool:
+        """Attempt to reconnect to the mount"""
+        logger.info("MountControlAPI: Attempting to reconnect...")
+        try:
+            # Close existing connection
+            self.disconnect()
+            
+            # Reinitialize mount connection
+            self._init_mount()
+            
+            if self.mount and self.connection_status:
+                logger.info("MountControlAPI: Successfully reconnected")
+                return True
+            else:
+                logger.warning("MountControlAPI: Failed to reconnect")
+                return False
+                
+        except Exception as e:
+            logger.error(f"MountControlAPI: Error during reconnection: {e}")
+            return False

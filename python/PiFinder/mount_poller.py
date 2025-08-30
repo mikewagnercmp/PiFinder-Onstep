@@ -74,7 +74,15 @@ class MountPoller:
         """Attempt to reconnect to the mount"""
         logger.info("Attempting to reconnect to mount...")
         try:
-            # Close existing connection
+            # Try to reconnect using the MountControlAPI's reconnection method
+            if self.mount_api:
+                if self.mount_api.attempt_reconnection():
+                    logger.info("Successfully reconnected to mount")
+                    return
+                else:
+                    logger.warning("MountControlAPI reconnection failed, trying full reinitialization")
+            
+            # Fallback: full reinitialization
             if self.mount_api:
                 self.mount_api.close()
             
@@ -82,7 +90,7 @@ class MountPoller:
             self._init_mount_control()
             
             if self.mount_api and self.mount_api.mount and self.mount_api.mount.connected:
-                logger.info("Successfully reconnected to mount")
+                logger.info("Successfully reconnected to mount via reinitialization")
             else:
                 logger.warning("Failed to reconnect to mount")
                 
