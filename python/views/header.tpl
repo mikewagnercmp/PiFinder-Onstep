@@ -17,6 +17,7 @@
         <li><a href="/">Home</a></li>
         <li><a href="/remote">Remote</a></li>
         <li><a href="/network">Network Setup</a></li>
+        <li><a href="/mount">Mount Control</a></li>
         <li><a href="/observations">Observations</a></li>
         <li><a href="/locations">Locations</a></li>
         <li><a href="/equipment">Equipment</a></li>
@@ -28,6 +29,7 @@
         <li><a href="/">Home</a></li>
         <li><a href="/remote">Remote</a></li>
         <li><a href="/network">Network Setup</a></li>
+        <li><a href="/mount">Mount Control</a></li>
         <li><a href="/observations">Observations</a></li>
         <li><a href="/locations">Locations</a></li>
         <li><a href="/equipment">Equipment</a></li>

@@ -12,6 +12,7 @@ from PiFinder.ui.textentry import UITextEntry
 from PiFinder.ui.preview import UIPreview
 from PiFinder.ui.equipment import UIEquipment
 from PiFinder.ui.location_list import UILocationList
+from PiFinder.ui.simple_sync import UISimpleSync
 import PiFinder.ui.callbacks as callbacks
 
 
@@ -954,6 +955,7 @@ pifinder_menu = {
             "items": [
                 {"name": _("Status"), "class": UIStatus},
                 {"name": _("Equipment"), "class": UIEquipment, "label": "equipment"},
+                {"name": _("Mount Sync"), "class": UISimpleSync},
                 {
                     "name": _("Place & Time"),
                     "class": UITextMenu,

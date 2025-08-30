@@ -393,7 +393,107 @@ class Server:
                 location = cfg.locations.locations[location_id]
                 gps_lock(location.latitude, location.longitude, location.height)
             redirect("/locations")
+            
+        @app.route("/mount")
+        @auth_required
+        def mount_page():
+            cfg = config.Config()
+            cfg.load_config()
+            
+            # Get current mount settings
+            mount_config = cfg.get_option("mount_control", {})
+            if not mount_config:
+                mount_config = {
+                    "mount_type": "astro_physics",
+                    "host": "192.168.1.100",
+                    "port": 23,  # Default port for Astro Physics mounts
+                    "auto_sync_enabled": True,
+                    "sync_threshold_arcmin": 2.0,
+                    "sync_cooldown_minutes": 5,
+                    "slew_timeout_minutes": 10,
+                    "slew_completion_threshold_arcmin": 1.0
+                }
+            
+            return template(
+                "mount",
+                mount_config=mount_config,
+            )
 
+        @app.route("/mount/update", method="post")
+        @auth_required
+        def mount_update():
+            try:
+                # Get form data
+                mount_type = request.forms.get("mount_type", "astro_physics")
+                host = request.forms.get("host", "").strip()
+                port = int(request.forms.get("port", "9996"))
+                auto_sync_enabled = request.forms.get("auto_sync_enabled") == "on"
+                sync_threshold = float(request.forms.get("sync_threshold", "2.0"))
+                sync_cooldown = int(request.forms.get("sync_cooldown", "5"))
+                slew_timeout = int(request.forms.get("slew_timeout", "10"))
+                slew_completion_threshold = float(request.forms.get("slew_completion_threshold", "1.0"))
+
+                # Server-side validation
+                if not host:
+                    raise ValueError("Mount host/IP address is required")
+                if not (1 <= port <= 65535):
+                    raise ValueError("Port must be between 1 and 65535")
+                if not (0.1 <= sync_threshold <= 10.0):
+                    raise ValueError("Sync threshold must be between 0.1 and 10.0 arcminutes")
+                if not (0 <= sync_cooldown <= 60):
+                    raise ValueError("Sync cooldown must be between 0 and 60 minutes")
+                if not (1 <= slew_timeout <= 60):
+                    raise ValueError("Slew timeout must be between 1 and 60 minutes")
+                if not (0.1 <= slew_completion_threshold <= 5.0):
+                    raise ValueError("Slew completion threshold must be between 0.1 and 5.0 arcminutes")
+
+                # Create mount configuration
+                mount_config = {
+                    "mount_type": mount_type,
+                    "host": host,
+                    "port": port,
+                    "auto_sync_enabled": auto_sync_enabled,
+                    "sync_threshold_arcmin": sync_threshold,
+                    "sync_cooldown_minutes": sync_cooldown,
+                    "slew_timeout_minutes": slew_timeout,
+                    "slew_completion_threshold_arcmin": slew_completion_threshold
+                }
+
+                # Save configuration
+                cfg = config.Config()
+                cfg.load_config()
+                cfg.set_option("mount_control", mount_config)
+                cfg.dump_config()
+
+                logger.info(f"Mount configuration updated: {mount_config}")
+                
+                # Redirect back to mount page with success message
+                return template(
+                    "mount",
+                    mount_config=mount_config,
+                    success_message="Mount configuration updated successfully!"
+                )
+
+            except ValueError as e:
+                # Return with error message
+                cfg = config.Config()
+                cfg.load_config()
+                mount_config = cfg.get_option("mount_control", {})
+                return template(
+                    "mount",
+                    mount_config=mount_config,
+                    error_message=str(e)
+                )
+            except Exception as e:
+                logger.error(f"Error updating mount configuration: {e}")
+                cfg = config.Config()
+                cfg.load_config()
+                mount_config = cfg.get_option("mount_control", {})
+                return template(
+                    "mount",
+                    mount_config=mount_config,
+                    error_message="An unexpected error occurred while updating configuration."
+                )
         @app.route("/network/add", method="post")
         @auth_required
         def network_add():
