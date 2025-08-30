@@ -222,12 +222,12 @@ class UISimpleSync(UIModule):
         # Display instructions
         self.draw.text(
             (10, 115),
-            "Press ENTER to sync",
+            "Press SQUARE to sync",
             font=self.fonts.base.font,
             fill=self.colors.get(255),
         )
 
-    def key_enter(self):
+    def key_square(self):
         """Perform sync operation"""
         if not self.mount_api or not self.mount_api.mount:
             self.message("No mount connected", 2)
