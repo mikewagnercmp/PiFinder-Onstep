@@ -60,11 +60,11 @@ class UISimpleSync(UIModule):
         # Clear Screen
         self.clear_screen()
 
-        # Title
+        # Title (using smaller font to save space)
         self.draw.text(
-            (10, 10),
+            (10, 5),
             "MOUNT SYNC",
-            font=self.fonts.large.font,
+            font=self.fonts.base.font,
             fill=self.colors.get(255),
         )
 
@@ -127,9 +127,9 @@ class UISimpleSync(UIModule):
             time_since_sync = time.time() - self.last_sync_time
             logger.info(f"Simple sync UI: Time since last sync: {time_since_sync:.1f}s")
 
-        # Display coordinate headers
+        # Display coordinate headers (moved up to save space)
         self.draw.text(
-            (10, 40),
+            (10, 25),
             "Mount / Solved:",
             font=self.fonts.base.font,
             fill=self.colors.get(255),
@@ -148,13 +148,13 @@ class UISimpleSync(UIModule):
             ra_text += "N/A"
             
         self.draw.text(
-            (10, 55),
+            (10, 40),
             ra_text,
             font=self.fonts.base.font,
             fill=self.colors.get(255),
         )
 
-        # Display solved RA on next line
+        # Display solved RA on next line (indented)
         solved_ra_text = "     "
         if current_ra is not None:
             # Convert RA degrees to HH:MM:SS
@@ -167,7 +167,7 @@ class UISimpleSync(UIModule):
             solved_ra_text += "N/A"
             
         self.draw.text(
-            (10, 70),
+            (10, 55),
             solved_ra_text,
             font=self.fonts.base.font,
             fill=self.colors.get(255),
@@ -187,13 +187,13 @@ class UISimpleSync(UIModule):
             dec_text += "N/A"
             
         self.draw.text(
-            (10, 85),
+            (10, 70),
             dec_text,
             font=self.fonts.base.font,
             fill=self.colors.get(255),
         )
 
-        # Display solved DEC on next line
+        # Display solved DEC on next line (indented)
         solved_dec_text = "     "
         if current_dec is not None:
             # Convert DEC degrees to DD:MM:SS
@@ -207,7 +207,7 @@ class UISimpleSync(UIModule):
             solved_dec_text += "N/A"
             
         self.draw.text(
-            (10, 100),
+            (10, 85),
             solved_dec_text,
             font=self.fonts.base.font,
             fill=self.colors.get(255),
@@ -216,7 +216,7 @@ class UISimpleSync(UIModule):
         # Display sync status (using smaller font)
         if self.sync_in_progress:
             self.draw.text(
-                (10, 115),
+                (10, 100),
                 "SYNCING...",
                 font=self.fonts.base.font,
                 fill=self.colors.get(255),
@@ -224,14 +224,14 @@ class UISimpleSync(UIModule):
         elif self.sync_result is not None:
             if self.sync_result:
                 self.draw.text(
-                    (10, 115),
+                    (10, 100),
                     "SYNC SUCCESS!",
                     font=self.fonts.base.font,
                     fill=self.colors.get(255),
                 )
             else:
                 self.draw.text(
-                    (10, 115),
+                    (10, 100),
                     "SYNC FAILED",
                     font=self.fonts.base.font,
                     fill=self.colors.get(128),
@@ -239,7 +239,7 @@ class UISimpleSync(UIModule):
 
         # Display instructions
         self.draw.text(
-            (10, 130),
+            (10, 115),
             "Press RIGHT to sync",
             font=self.fonts.base.font,
             fill=self.colors.get(255),
