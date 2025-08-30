@@ -240,12 +240,12 @@ class UISimpleSync(UIModule):
         # Display instructions
         self.draw.text(
             (10, 115),
-            "Press RIGHT to sync",
+            "Press ENTER to sync",
             font=self.fonts.base.font,
             fill=self.colors.get(255),
         )
 
-    def key_right(self):
+    def key_enter(self):
         """Perform sync operation"""
         if not self.mount_api or not self.mount_api.mount:
             self.message("No mount connected", 2)
@@ -299,6 +299,10 @@ class UISimpleSync(UIModule):
             self.sync_in_progress = False
 
         return True
+
+    def key_right(self):
+        """Right button - do nothing to prevent accidental syncs"""
+        return False
 
     def key_left(self):
         """Go back"""
