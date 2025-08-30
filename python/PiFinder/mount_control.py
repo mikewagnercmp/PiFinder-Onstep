@@ -105,7 +105,19 @@ class AstroPhysicsMount:
             logger.info(f"Mount sync: Mount timezone offset: '{mount_timezone}'")
             
             # Convert degrees to mount format (HH:MM:SS and sDD:MM:SS)
+            # Apply 12-hour offset fix: mount interprets coordinates with 12-hour offset
             ra_str = self._degrees_to_ra(current_ra_deg)
+            
+            # Parse the RA string and apply 12-hour offset
+            ra_parts = ra_str.split(':')
+            ra_h = int(ra_parts[0])
+            ra_m = int(ra_parts[1])
+            ra_s = int(ra_parts[2])
+            
+            # Apply 12-hour offset (subtract 12 hours)
+            ra_h = (ra_h - 12) % 24
+            ra_str = f"{ra_h:02d}:{ra_m:02d}:{ra_s:02d}"
+            
             dec_str = self._degrees_to_dec(current_dec_deg)
             
             logger.info(f"Mount sync: converting {current_ra_deg:.6f}°, {current_dec_deg:.6f}° to {ra_str}, {dec_str}")
