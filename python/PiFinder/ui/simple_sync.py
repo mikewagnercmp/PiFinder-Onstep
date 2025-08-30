@@ -83,7 +83,7 @@ class UISimpleSync(UIModule):
             return
 
         # Check if mount is connected
-        if not self.mount_api.mount or not self.mount_api.mount.connection_status:
+        if not self.mount_api.mount or not self.mount_api.mount.connected:
             self.draw.text(
                 (10, 40),
                 "Mount not connected",
@@ -167,7 +167,7 @@ class UISimpleSync(UIModule):
             self.message("No mount connected", 2)
             return True
 
-        if not self.mount_api.mount.connection_status:
+        if not self.mount_api.mount.connected:
             self.message("Mount not connected", 2)
             return True
 
