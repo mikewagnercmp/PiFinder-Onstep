@@ -135,21 +135,11 @@ class UISimpleSync(UIModule):
             fill=self.colors.get(255),
         )
 
-        # Display RA coordinates on one line (in HH:MM:SS format)
+        # Display RA coordinates on separate lines
         ra_text = "RA: "
         if mount_ra is not None:
             # Convert RA degrees to HH:MM:SS
             ra_hours = mount_ra / 15
-            ra_h = int(ra_hours)
-            ra_m = int((ra_hours - ra_h) * 60)
-            ra_s = int(((ra_hours - ra_h) * 60 - ra_m) * 60)
-            ra_text += f"{ra_h:02d}:{ra_m:02d}:{ra_s:02d}"
-        else:
-            ra_text += "N/A"
-        ra_text += " / "
-        if current_ra is not None:
-            # Convert RA degrees to HH:MM:SS
-            ra_hours = current_ra / 15
             ra_h = int(ra_hours)
             ra_m = int((ra_hours - ra_h) * 60)
             ra_s = int(((ra_hours - ra_h) * 60 - ra_m) * 60)
@@ -164,7 +154,26 @@ class UISimpleSync(UIModule):
             fill=self.colors.get(255),
         )
 
-        # Display DEC coordinates on one line (in DD:MM:SS format)
+        # Display solved RA on next line
+        solved_ra_text = "     "
+        if current_ra is not None:
+            # Convert RA degrees to HH:MM:SS
+            ra_hours = current_ra / 15
+            ra_h = int(ra_hours)
+            ra_m = int((ra_hours - ra_h) * 60)
+            ra_s = int(((ra_hours - ra_h) * 60 - ra_m) * 60)
+            solved_ra_text += f"{ra_h:02d}:{ra_m:02d}:{ra_s:02d}"
+        else:
+            solved_ra_text += "N/A"
+            
+        self.draw.text(
+            (10, 70),
+            solved_ra_text,
+            font=self.fonts.base.font,
+            fill=self.colors.get(255),
+        )
+
+        # Display DEC coordinates on separate lines
         dec_text = "DEC: "
         if mount_dec is not None:
             # Convert DEC degrees to DD:MM:SS
@@ -176,7 +185,16 @@ class UISimpleSync(UIModule):
             dec_text += f"{dec_sign}{dec_d:02d}:{dec_m:02d}:{dec_s:02d}"
         else:
             dec_text += "N/A"
-        dec_text += " / "
+            
+        self.draw.text(
+            (10, 85),
+            dec_text,
+            font=self.fonts.base.font,
+            fill=self.colors.get(255),
+        )
+
+        # Display solved DEC on next line
+        solved_dec_text = "     "
         if current_dec is not None:
             # Convert DEC degrees to DD:MM:SS
             dec_sign = "+" if current_dec >= 0 else "-"
@@ -184,44 +202,44 @@ class UISimpleSync(UIModule):
             dec_d = int(dec_abs)
             dec_m = int((dec_abs - dec_d) * 60)
             dec_s = int(((dec_abs - dec_d) * 60 - dec_m) * 60)
-            dec_text += f"{dec_sign}{dec_d:02d}:{dec_m:02d}:{dec_s:02d}"
+            solved_dec_text += f"{dec_sign}{dec_d:02d}:{dec_m:02d}:{dec_s:02d}"
         else:
-            dec_text += "N/A"
+            solved_dec_text += "N/A"
             
         self.draw.text(
-            (10, 70),
-            dec_text,
+            (10, 100),
+            solved_dec_text,
             font=self.fonts.base.font,
             fill=self.colors.get(255),
         )
 
-        # Display sync status
+        # Display sync status (using smaller font)
         if self.sync_in_progress:
             self.draw.text(
-                (10, 90),
+                (10, 115),
                 "SYNCING...",
-                font=self.fonts.large.font,
+                font=self.fonts.base.font,
                 fill=self.colors.get(255),
             )
         elif self.sync_result is not None:
             if self.sync_result:
                 self.draw.text(
-                    (10, 90),
+                    (10, 115),
                     "SYNC SUCCESS!",
-                    font=self.fonts.large.font,
+                    font=self.fonts.base.font,
                     fill=self.colors.get(255),
                 )
             else:
                 self.draw.text(
-                    (10, 90),
+                    (10, 115),
                     "SYNC FAILED",
-                    font=self.fonts.large.font,
+                    font=self.fonts.base.font,
                     fill=self.colors.get(128),
                 )
 
         # Display instructions
         self.draw.text(
-            (10, 110),
+            (10, 130),
             "Press RIGHT to sync",
             font=self.fonts.base.font,
             fill=self.colors.get(255),
