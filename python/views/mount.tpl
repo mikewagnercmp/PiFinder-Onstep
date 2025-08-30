@@ -1,5 +1,17 @@
 % include("header.tpl", title="Mount Control Configuration")
 
+<style>
+.input-field {
+  margin-bottom: 20px;
+}
+.input-field label {
+  margin-top: 10px;
+}
+.helper-text {
+  margin-top: 5px;
+}
+</style>
+
 <div class="row valign-wrapper" style="margin: 0px;">
   <div class="col s12">
     <h5 class="grey-text">Mount Control Configuration</h5>
