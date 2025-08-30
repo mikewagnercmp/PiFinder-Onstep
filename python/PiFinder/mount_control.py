@@ -107,6 +107,25 @@ class AstroPhysicsMount:
             # Check if sync was successful - AP returns "Coordinates     Matched.        #"
             if response and "Matched" in response:
                 logger.info(f"Sync successful to RA: {ra_str}, DEC: {dec_str}")
+                
+                # Wait a moment for mount to update its position
+                import time
+                time.sleep(1.0)
+                
+                # Check if mount position updated
+                new_position = self.get_position()
+                if new_position:
+                    new_ra, new_dec = new_position
+                    logger.info(f"Mount position after sync: RA={new_ra:.2f}°, DEC={new_dec:.2f}°")
+                    
+                    # Check if position changed significantly
+                    ra_diff = abs(new_ra - ra_deg)
+                    dec_diff = abs(new_dec - dec_deg)
+                    if ra_diff > 1.0 or dec_diff > 1.0:
+                        logger.warning(f"Mount position did not update properly after sync!")
+                        logger.warning(f"Expected: RA={ra_deg:.2f}°, DEC={dec_deg:.2f}°")
+                        logger.warning(f"Actual: RA={new_ra:.2f}°, DEC={new_dec:.2f}°")
+                
                 return True, "Sync successful"
             else:
                 logger.warning(f"Sync failed: {response}")

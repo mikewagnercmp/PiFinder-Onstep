@@ -121,6 +121,11 @@ class UISimpleSync(UIModule):
             logger.info(f"Simple sync UI: Coordinate diff - RA: {ra_diff:.2f}°, DEC: {dec_diff:.2f}°")
             if ra_diff > 1.0 or dec_diff > 1.0:
                 logger.warning(f"Simple sync UI: Large coordinate difference detected!")
+                
+        # Log sync timing info
+        if hasattr(self, 'last_sync_time') and self.last_sync_time:
+            time_since_sync = time.time() - self.last_sync_time
+            logger.info(f"Simple sync UI: Time since last sync: {time_since_sync:.1f}s")
 
         # Display coordinate headers
         self.draw.text(
