@@ -95,9 +95,10 @@ class AstroPhysicsMount:
             # Debug: log raw responses
             logger.debug(f"Mount responses - RA: '{ra_response}', DEC: '{dec_response}'")
             
-            # Check for invalid/initializing coordinates
-            if ra_response == "00:00:00#" or "00:00:00" in ra_response:
-                logger.debug("Mount returning invalid RA coordinates (00:00:00), mount may still be initializing")
+            # Check for mount initialization state
+            # 00:00:00 typically indicates mount is still initializing after power-on
+            if ra_response == "00:00:00#" or ra_response == "00:00:00.0#":
+                logger.debug("Mount returning initialization coordinates (00:00:00), mount may still be starting up")
                 return None
             
             # Parse responses (format: HH:MM:SS# for RA, sDD:MM:SS# for Dec)
