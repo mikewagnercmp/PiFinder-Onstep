@@ -115,51 +115,118 @@ class UISimpleSync(UIModule):
             )
             return
 
-        # Display current position from plate solve
+        # Get current mount position
+        mount_ra = None
+        mount_dec = None
+        try:
+            mount_ra, mount_dec = self.mount_api.get_position()
+        except Exception as e:
+            logger.debug(f"Could not get mount position: {e}")
+
+        # Display solved position (what PiFinder sees)
         self.draw.text(
             (10, 40),
+            "Solved:",
+            font=self.fonts.base.font,
+            fill=self.colors.get(255),
+        )
+        self.draw.text(
+            (10, 55),
             f"RA: {current_ra:.2f}°",
             font=self.fonts.base.font,
             fill=self.colors.get(255),
         )
         self.draw.text(
-            (10, 60),
+            (10, 70),
             f"DEC: {current_dec:.2f}°",
             font=self.fonts.base.font,
             fill=self.colors.get(255),
         )
 
-        # Display sync status
-        if self.sync_in_progress:
+        # Display mount position (what mount thinks)
+        if mount_ra is not None and mount_dec is not None:
             self.draw.text(
                 (10, 90),
-                "SYNCING...",
-                font=self.fonts.large.font,
+                "Mount:",
+                font=self.fonts.base.font,
                 fill=self.colors.get(255),
             )
-        elif self.sync_result is not None:
-            if self.sync_result:
+            self.draw.text(
+                (10, 105),
+                f"RA: {mount_ra:.2f}°",
+                font=self.fonts.base.font,
+                fill=self.colors.get(255),
+            )
+            self.draw.text(
+                (10, 120),
+                f"DEC: {mount_dec:.2f}°",
+                font=self.fonts.base.font,
+                fill=self.colors.get(255),
+            )
+
+            # Display sync status
+            if self.sync_in_progress:
                 self.draw.text(
-                    (10, 90),
-                    "SYNC SUCCESS!",
+                    (10, 140),
+                    "SYNCING...",
                     font=self.fonts.large.font,
                     fill=self.colors.get(255),
                 )
-            else:
+            elif self.sync_result is not None:
+                if self.sync_result:
+                    self.draw.text(
+                        (10, 140),
+                        "SYNC SUCCESS!",
+                        font=self.fonts.large.font,
+                        fill=self.colors.get(255),
+                    )
+                else:
+                    self.draw.text(
+                        (10, 140),
+                        "SYNC FAILED",
+                        font=self.fonts.large.font,
+                        fill=self.colors.get(128),
+                    )
+
+            # Display instructions
+            self.draw.text(
+                (10, 160),
+                "Press RIGHT to sync",
+                font=self.fonts.base.font,
+                fill=self.colors.get(255),
+            )
+        else:
+            # If no mount position, show sync status and instructions higher
+            if self.sync_in_progress:
                 self.draw.text(
                     (10, 90),
-                    "SYNC FAILED",
+                    "SYNCING...",
                     font=self.fonts.large.font,
-                    fill=self.colors.get(128),
+                    fill=self.colors.get(255),
                 )
+            elif self.sync_result is not None:
+                if self.sync_result:
+                    self.draw.text(
+                        (10, 90),
+                        "SYNC SUCCESS!",
+                        font=self.fonts.large.font,
+                        fill=self.colors.get(255),
+                    )
+                else:
+                    self.draw.text(
+                        (10, 90),
+                        "SYNC FAILED",
+                        font=self.fonts.large.font,
+                        fill=self.colors.get(128),
+                    )
 
-        # Display instructions
-        self.draw.text(
-            (10, 120),
-            "Press RIGHT to sync",
-            font=self.fonts.base.font,
-            fill=self.colors.get(255),
-        )
+            # Display instructions
+            self.draw.text(
+                (10, 110),
+                "Press RIGHT to sync",
+                font=self.fonts.base.font,
+                fill=self.colors.get(255),
+            )
 
     def key_right(self):
         """Perform sync operation"""
