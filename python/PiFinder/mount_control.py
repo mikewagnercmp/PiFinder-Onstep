@@ -39,6 +39,7 @@ class AstroPhysicsMount:
     def get_position(self) -> Optional[Tuple[float, float]]:
         """Get current mount position (RA, Dec) in degrees"""
         if not self.connected:
+            logger.warning("Cannot get position: mount not connected")
             return None
             
         try:
@@ -46,13 +47,19 @@ class AstroPhysicsMount:
             ra_response = self.interface.send_command(":GR#")  # Get RA
             dec_response = self.interface.send_command(":GD#")  # Get Dec
             
+            logger.info(f"Mount responses - RA: '{ra_response}', DEC: '{dec_response}'")
+            
             # Parse responses (format: HH:MM:SS# for RA, sDD:MM:SS# for Dec)
             ra_deg = self._parse_ra(ra_response)
             dec_deg = self._parse_dec(dec_response)
             
+            logger.info(f"Parsed coordinates - RA: {ra_deg}, DEC: {dec_deg}")
+            
             if ra_deg is not None and dec_deg is not None:
                 return (ra_deg, dec_deg)
-            return None
+            else:
+                logger.warning(f"Failed to parse coordinates - RA: {ra_deg}, DEC: {dec_deg}")
+                return None
             
         except Exception as e:
             logger.error(f"Error getting mount position: {e}")
@@ -164,36 +171,61 @@ class AstroPhysicsMount:
                 self.connected = False
     
     def _parse_ra(self, ra_str: str) -> Optional[float]:
-        """Parse RA string (HH:MM:SS#) to degrees"""
+        """Parse RA string (HH:MM:SS# or HH:MM.M#) to degrees"""
         try:
             if not ra_str or '#' not in ra_str:
                 return None
             ra_str = ra_str.strip('#')
+            
+            # Handle HH:MM.M format (decimal minutes)
+            if '.' in ra_str:
+                parts = ra_str.split(':')
+                if len(parts) == 2:
+                    hours = float(parts[0])
+                    minutes = float(parts[1])
+                    return (hours + minutes/60) * 15  # Convert to degrees
+            
+            # Handle HH:MM:SS format
             parts = ra_str.split(':')
             if len(parts) == 3:
                 hours = float(parts[0])
                 minutes = float(parts[1])
                 seconds = float(parts[2])
                 return (hours + minutes/60 + seconds/3600) * 15  # Convert to degrees
+            
             return None
         except Exception as e:
             logger.error(f"Error parsing RA '{ra_str}': {e}")
             return None
     
     def _parse_dec(self, dec_str: str) -> Optional[float]:
-        """Parse Dec string (sDD:MM:SS#) to degrees"""
+        """Parse Dec string (sDD:MM:SS# or sDD*MM:SS#) to degrees"""
         try:
             if not dec_str or '#' not in dec_str:
                 return None
             dec_str = dec_str.strip('#')
             sign = 1 if dec_str[0] != '-' else -1
             dec_str = dec_str.lstrip('+-')
+            
+            # Handle DD*MM:SS format (asterisk separator)
+            if '*' in dec_str:
+                parts = dec_str.split('*')
+                if len(parts) == 2:
+                    degrees = float(parts[0])
+                    mm_ss = parts[1].split(':')
+                    if len(mm_ss) == 2:
+                        minutes = float(mm_ss[0])
+                        seconds = float(mm_ss[1])
+                        return sign * (degrees + minutes/60 + seconds/3600)
+            
+            # Handle DD:MM:SS format (colon separator)
             parts = dec_str.split(':')
             if len(parts) == 3:
                 degrees = float(parts[0])
                 minutes = float(parts[1])
                 seconds = float(parts[2])
                 return sign * (degrees + minutes/60 + seconds/3600)
+            
             return None
         except Exception as e:
             logger.error(f"Error parsing Dec '{dec_str}': {e}")
@@ -332,3 +364,7 @@ class MountControlAPI:
             finally:
                 self.mount = None
                 self.connection_status = False
+    
+    def close(self):
+        """Close the mount connection"""
+        self.disconnect()
