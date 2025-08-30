@@ -341,13 +341,13 @@ class AstroPhysicsMount:
         return f"{h:02d}:{m:02d}:{s:02d}"
     
     def _degrees_to_dec(self, dec_deg: float) -> str:
-        """Convert Dec degrees to sDD:MM:SS format"""
+        """Convert Dec degrees to sDD*MM:SS format (Astro Physics LX200 format)"""
         sign = "+" if dec_deg >= 0 else "-"
         dec_deg = abs(dec_deg)
         d = int(dec_deg)
         m = int((dec_deg - d) * 60)
         s = int(((dec_deg - d) * 60 - m) * 60)
-        return f"{sign}{d:02d}:{m:02d}:{s:02d}"
+        return f"{sign}{d:02d}*{m:02d}:{s:02d}"
 
 class MountControlAPI:
     """API for controlling telescope mounts"""
