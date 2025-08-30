@@ -355,6 +355,28 @@ class AstroPhysicsMount:
         m = int((dec_deg - d) * 60)
         s = int(((dec_deg - d) * 60 - m) * 60)
         return f"{sign}{d:02d}*{m:02d}:{s:02d}"
+    
+    def format_coordinates(self, ra_deg: float, dec_deg: float) -> tuple[str, str]:
+        """Format coordinates for display in Astro Physics format (HH:MM:SS, sDD:MM:SS)"""
+        if ra_deg is None or dec_deg is None:
+            return "N/A", "N/A"
+        
+        # Convert RA degrees to HH:MM:SS
+        ra_hours = ra_deg / 15
+        ra_h = int(ra_hours)
+        ra_m = int((ra_hours - ra_h) * 60)
+        ra_s = int(((ra_hours - ra_h) * 60 - ra_m) * 60)
+        ra_str = f"{ra_h:02d}:{ra_m:02d}:{ra_s:02d}"
+        
+        # Convert DEC degrees to sDD:MM:SS
+        dec_sign = "+" if dec_deg >= 0 else "-"
+        dec_abs = abs(dec_deg)
+        dec_d = int(dec_abs)
+        dec_m = int((dec_abs - dec_d) * 60)
+        dec_s = int(((dec_abs - dec_d) * 60 - dec_m) * 60)
+        dec_str = f"{dec_sign}{dec_d:02d}:{dec_m:02d}:{dec_s:02d}"
+        
+        return ra_str, dec_str
 
 class MountControlAPI:
     """API for controlling telescope mounts"""
@@ -407,6 +429,12 @@ class MountControlAPI:
         except Exception as e:
             logger.error(f"Error getting mount position: {e}")
             return None
+    
+    def format_coordinates(self, ra_deg: float, dec_deg: float) -> tuple[str, str]:
+        """Format coordinates for display in mount-specific format"""
+        if not self.mount or not self.connection_status:
+            return "N/A", "N/A"
+        return self.mount.format_coordinates(ra_deg, dec_deg)
     
     def sync_to_position(self, ra_deg: float, dec_deg: float) -> tuple[bool, str]:
         """Sync mount to specified position"""
