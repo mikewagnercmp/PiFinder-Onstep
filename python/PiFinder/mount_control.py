@@ -28,13 +28,34 @@ class AstroPhysicsMount:
         try:
             self.interface.connect()
             self.connected = True
-            # Test with a simple command
-            response = self.interface.send_command(":GR#")  # Get RA
-            logger.info(f"Mount connection test successful: {response}")
-            # Reset calibration state on new connection
-            self.initial_calibration_done = False
-            logger.info("Reset initial calibration state - ready for :CM#")
-            return True
+            
+            # Wait for mount to initialize and get valid coordinates
+            import time
+            max_retries = 5
+            retry_delay = 1.0
+            
+            for attempt in range(max_retries):
+                # Test with a simple command
+                response = self.interface.send_command(":GR#")  # Get RA
+                logger.info(f"Mount connection test attempt {attempt + 1}: {response}")
+                
+                # Check if we got valid coordinates (not 00:00:00)
+                if response and response != "00:00:00#" and "00:00:00" not in response:
+                    logger.info(f"Mount connection test successful: {response}")
+                    # Reset calibration state on new connection
+                    self.initial_calibration_done = False
+                    logger.info("Reset initial calibration state - ready for :CM#")
+                    return True
+                else:
+                    logger.info(f"Mount still initializing (attempt {attempt + 1}/{max_retries}), waiting {retry_delay}s...")
+                    if attempt < max_retries - 1:  # Don't sleep on last attempt
+                        time.sleep(retry_delay)
+            
+            # If we get here, mount didn't provide valid coordinates
+            logger.warning("Mount connection test failed: mount did not provide valid coordinates after initialization")
+            self.connected = False
+            return False
+            
         except Exception as e:
             logger.error(f"Mount connection test failed: {e}")
             self.connected = False
@@ -73,6 +94,11 @@ class AstroPhysicsMount:
             
             # Debug: log raw responses
             logger.debug(f"Mount responses - RA: '{ra_response}', DEC: '{dec_response}'")
+            
+            # Check for invalid/initializing coordinates
+            if ra_response == "00:00:00#" or "00:00:00" in ra_response:
+                logger.debug("Mount returning invalid RA coordinates (00:00:00), mount may still be initializing")
+                return None
             
             # Parse responses (format: HH:MM:SS# for RA, sDD:MM:SS# for Dec)
             ra_deg = self._parse_ra(ra_response)
