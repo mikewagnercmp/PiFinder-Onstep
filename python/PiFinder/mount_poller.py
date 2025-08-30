@@ -70,8 +70,30 @@ class MountPoller:
             self.thread.join(timeout=1.0)
         logger.info("Mount poller stopped")
         
+    def _reconnect_mount(self):
+        """Attempt to reconnect to the mount"""
+        logger.info("Attempting to reconnect to mount...")
+        try:
+            # Close existing connection
+            if self.mount_api:
+                self.mount_api.close()
+            
+            # Reinitialize mount control
+            self._init_mount_control()
+            
+            if self.mount_api and self.mount_api.mount and self.mount_api.mount.connected:
+                logger.info("Successfully reconnected to mount")
+            else:
+                logger.warning("Failed to reconnect to mount")
+                
+        except Exception as e:
+            logger.error(f"Error during mount reconnection: {e}")
+    
     def _poll_loop(self):
         """Main polling loop"""
+        consecutive_errors = 0
+        max_consecutive_errors = 3
+        
         while self.running:
             try:
                 if self.mount_api and self.mount_api.mount and self.mount_api.mount.connected:
@@ -97,6 +119,9 @@ class MountPoller:
                                 dec_diff = abs(mount_dec - prev_dec)
                                 if ra_diff > 0.1 or dec_diff > 0.1:
                                     logger.warning(f"Mount position changed significantly: RA diff={ra_diff:.2f}°, DEC diff={dec_diff:.2f}°")
+                            
+                            # Reset error counter on successful communication
+                            consecutive_errors = 0
                         else:
                             # Clear mount position if coordinates are None
                             self.shared_state.set_mount_position(None)
@@ -111,8 +136,18 @@ class MountPoller:
                     logger.debug("Mount not connected")
                     
             except Exception as e:
-                logger.error(f"Error polling mount position: {e}")
+                consecutive_errors += 1
+                logger.error(f"Error polling mount position (attempt {consecutive_errors}): {e}")
                 self.shared_state.set_mount_position(None)
+                
+                # Try to reconnect if we've had multiple consecutive errors
+                if consecutive_errors >= max_consecutive_errors:
+                    logger.warning(f"Multiple consecutive errors ({consecutive_errors}), attempting to reconnect to mount...")
+                    try:
+                        self._reconnect_mount()
+                        consecutive_errors = 0  # Reset counter after reconnection attempt
+                    except Exception as reconnect_error:
+                        logger.error(f"Failed to reconnect to mount: {reconnect_error}")
                 
             # Wait for next poll
             time.sleep(self.poll_interval)
