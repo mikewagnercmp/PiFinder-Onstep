@@ -65,27 +65,52 @@ class AstroPhysicsMount:
             logger.error(f"Error getting mount position: {e}")
             return None
     
-    def sync_to_position(self, ra_deg: float, dec_deg: float) -> bool:
+    def sync_to_position(self, ra_deg: float, dec_deg: float) -> tuple[bool, str]:
         """Sync mount to specified position"""
         if not self.connected:
             logger.warning("Cannot sync: mount not connected")
-            return False
+            return False, "Mount not connected"
             
         try:
             # Convert degrees to mount format (HH:MM:SS and sDD:MM:SS)
             ra_str = self._degrees_to_ra(ra_deg)
             dec_str = self._degrees_to_dec(dec_deg)
             
-            # Send sync command
-            response = self.interface.send_command(f":CS{ra_str},{dec_str}#")
+            logger.info(f"Mount sync: converting {ra_deg:.6f}°, {dec_deg:.6f}° to {ra_str}, {dec_str}")
             
-            # Check if sync was successful
-            if response and "1" in response:
+            # Set the commanded coordinates first
+            ra_set_command = f":Sr{ra_str}#"
+            logger.info(f"Mount sync: setting RA with '{ra_set_command}'")
+            ra_response = self.interface.send_command(ra_set_command)
+            logger.info(f"Mount sync: RA set response '{ra_response}'")
+            
+            if ra_response != "1":
+                logger.warning(f"Failed to set RA: {ra_response}")
+                return False, f"Failed to set RA: {ra_response}"
+            
+            dec_set_command = f":Sd{dec_str}#"
+            logger.info(f"Mount sync: setting DEC with '{dec_set_command}'")
+            dec_response = self.interface.send_command(dec_set_command)
+            logger.info(f"Mount sync: DEC set response '{dec_response}'")
+            
+            if dec_response != "1":
+                logger.warning(f"Failed to set DEC: {dec_response}")
+                return False, f"Failed to set DEC: {dec_response}"
+            
+            # Now sync to the commanded coordinates
+            sync_command = ":CMR#"
+            logger.info(f"Mount sync: sending sync command '{sync_command}'")
+            
+            response = self.interface.send_command(sync_command)
+            logger.info(f"Mount sync: received response '{response}'")
+            
+            # Check if sync was successful - AP returns "Coordinates     Matched.        #"
+            if response and "Matched" in response:
                 logger.info(f"Sync successful to RA: {ra_str}, DEC: {dec_str}")
-                return True
+                return True, "Sync successful"
             else:
                 logger.warning(f"Sync failed: {response}")
-                return False
+                return False, f"Sync failed: {response}"
                 
         except Exception as e:
             logger.error(f"Error syncing mount: {e}")
@@ -300,17 +325,17 @@ class MountControlAPI:
             logger.error(f"Error getting mount position: {e}")
             return None
     
-    def sync_to_position(self, ra_deg: float, dec_deg: float) -> bool:
+    def sync_to_position(self, ra_deg: float, dec_deg: float) -> tuple[bool, str]:
         """Sync mount to specified position"""
         if not self.mount or not self.connection_status:
             logger.warning("Cannot sync: mount not connected")
-            return False
+            return False, "Mount not connected"
             
         try:
             return self.mount.sync_to_position(ra_deg, dec_deg)
         except Exception as e:
             logger.error(f"Error syncing mount: {e}")
-            return False
+            return False, f"Error: {e}"
     
     def slew_to_position(self, ra_deg: float, dec_deg: float) -> bool:
         """Slew mount to specified position"""

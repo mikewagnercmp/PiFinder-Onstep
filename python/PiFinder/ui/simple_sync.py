@@ -218,8 +218,12 @@ class UISimpleSync(UIModule):
         self.message("Syncing...", 1)
 
         try:
+            logger.info(f"Attempting sync to RA: {current_ra:.6f}°, DEC: {current_dec:.6f}°")
+            
             # Perform sync with degrees (mount handles conversion internally)
             success, message = self.mount_api.sync_to_position(current_ra, current_dec)
+
+            logger.info(f"Sync result: success={success}, message='{message}'")
 
             self.sync_result = success
             self.last_sync_time = time.time()
