@@ -126,12 +126,9 @@ class AstroPhysicsMount:
                 logger.warning(f"Failed to set DEC: {dec_response}")
                 return False, f"Failed to set DEC: {dec_response}"
             
-            # Check what the mount thinks its commanded coordinates are
-            logger.info("Mount sync: Checking commanded coordinates...")
-            commanded_ra = self.interface.send_command(":GR#")
-            commanded_dec = self.interface.send_command(":GD#")
-            logger.info(f"Mount sync: Commanded RA: '{commanded_ra}'")
-            logger.info(f"Mount sync: Commanded DEC: '{commanded_dec}'")
+            # Note: :GR# and :GD# return current position, not commanded position
+            # The mount should have received our commanded coordinates via :Sr and :Sd
+            logger.info("Mount sync: Commanded coordinates set via :Sr and :Sd")
             
             # Now sync to the commanded coordinates
             sync_command = ":CMR#"
