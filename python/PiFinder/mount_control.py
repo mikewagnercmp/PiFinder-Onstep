@@ -130,9 +130,11 @@ class AstroPhysicsMount:
             # The mount should have received our commanded coordinates via :Sr and :Sd
             logger.info("Mount sync: Commanded coordinates set via :Sr and :Sd")
             
-            # Now sync to the commanded coordinates
-            sync_command = ":CMR#"
-            logger.info(f"Mount sync: sending sync command '{sync_command}'")
+            # Determine if this is initial calibration or re-calibration
+            # For now, we'll use :CM# (initial calibration) to establish baseline
+            # In a future version, we could track if this is the first sync
+            sync_command = ":CM#"
+            logger.info(f"Mount sync: sending initial calibration command '{sync_command}'")
             
             response = self.interface.send_command(sync_command)
             logger.info(f"Mount sync: received response '{response}'")
