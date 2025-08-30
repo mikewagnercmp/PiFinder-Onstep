@@ -100,6 +100,12 @@ class AstroPhysicsMount:
             
             logger.info(f"Mount sync: converting {current_ra_deg:.6f}°, {current_dec_deg:.6f}° to {ra_str}, {dec_str}")
             
+            # Log the exact commands being sent
+            ra_set_command = f":Sr{ra_str}#"
+            dec_set_command = f":Sd{dec_str}#"
+            logger.info(f"Mount sync: RA command: '{ra_set_command}'")
+            logger.info(f"Mount sync: DEC command: '{dec_set_command}'")
+            
             # Set the commanded coordinates first
             ra_set_command = f":Sr{ra_str}#"
             logger.info(f"Mount sync: setting RA with '{ra_set_command}'")
@@ -118,6 +124,13 @@ class AstroPhysicsMount:
             if dec_response != "1":
                 logger.warning(f"Failed to set DEC: {dec_response}")
                 return False, f"Failed to set DEC: {dec_response}"
+            
+            # Check what the mount thinks its commanded coordinates are
+            logger.info("Mount sync: Checking commanded coordinates...")
+            commanded_ra = self.interface.send_command(":GR#")
+            commanded_dec = self.interface.send_command(":GD#")
+            logger.info(f"Mount sync: Commanded RA: '{commanded_ra}'")
+            logger.info(f"Mount sync: Commanded DEC: '{commanded_dec}'")
             
             # Now sync to the commanded coordinates
             sync_command = ":CMR#"
