@@ -95,6 +95,15 @@ class AstroPhysicsMount:
             logger.info(f"Mount sync: J2000 coordinates: {ra_deg:.6f}°, {dec_deg:.6f}°")
             logger.info(f"Mount sync: Current epoch coordinates: {current_ra_deg:.6f}°, {current_dec_deg:.6f}°")
             
+            # Get mount's current sidereal time to understand coordinate interpretation
+            mount_sidereal = self.interface.send_command(":GS#")
+            mount_local = self.interface.send_command(":GL#")
+            mount_timezone = self.interface.send_command(":GG#")
+            
+            logger.info(f"Mount sync: Mount sidereal time: '{mount_sidereal}'")
+            logger.info(f"Mount sync: Mount local time: '{mount_local}'")
+            logger.info(f"Mount sync: Mount timezone offset: '{mount_timezone}'")
+            
             # Convert degrees to mount format (HH:MM:SS and sDD:MM:SS)
             ra_str = self._degrees_to_ra(current_ra_deg)
             dec_str = self._degrees_to_dec(current_dec_deg)
