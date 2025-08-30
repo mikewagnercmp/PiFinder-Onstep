@@ -21,6 +21,7 @@ class AstroPhysicsMount:
         self.port = port
         self.interface = astro_physics_comm.AstroPhysicsInterface(host=host, port=port)
         self.connected = False
+        self.initial_calibration_done = False  # Track if :CM# has been used this session
         
     def test_connection(self) -> bool:
         """Test if we can connect to the mount"""
@@ -30,6 +31,9 @@ class AstroPhysicsMount:
             # Test with a simple command
             response = self.interface.send_command(":GR#")  # Get RA
             logger.info(f"Mount connection test successful: {response}")
+            # Reset calibration state on new connection
+            self.initial_calibration_done = False
+            logger.info("Reset initial calibration state - ready for :CM#")
             return True
         except Exception as e:
             logger.error(f"Mount connection test failed: {e}")
@@ -140,10 +144,13 @@ class AstroPhysicsMount:
             # The mount should have received our commanded coordinates via :Sr and :Sd
             logger.info("Mount sync: Commanded coordinates set via :Sr and :Sd")
             
-            # Use :CMR# for re-calibration (subsequent syncs)
-            # :CM# is for initial calibration, :CMR# is for re-calibration
-            sync_command = ":CMR#"
-            logger.info(f"Mount sync: sending re-calibration command '{sync_command}'")
+            # Choose sync command based on whether initial calibration has been done
+            if not self.initial_calibration_done:
+                sync_command = ":CM#"
+                logger.info(f"Mount sync: sending initial calibration command '{sync_command}'")
+            else:
+                sync_command = ":CMR#"
+                logger.info(f"Mount sync: sending re-calibration command '{sync_command}'")
             
             response = self.interface.send_command(sync_command)
             logger.info(f"Mount sync: received response '{response}'")
