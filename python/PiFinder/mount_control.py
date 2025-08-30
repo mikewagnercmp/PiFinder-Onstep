@@ -72,11 +72,33 @@ class AstroPhysicsMount:
             return False, "Mount not connected"
             
         try:
-            # Convert degrees to mount format (HH:MM:SS and sDD:MM:SS)
-            ra_str = self._degrees_to_ra(ra_deg)
-            dec_str = self._degrees_to_dec(dec_deg)
+            # PiFinder plate solve coordinates are in J2000 epoch
+            # Astro Physics mounts typically use current epoch
+            # Convert from J2000 to current epoch if needed
+            from PiFinder.calc_utils import sf_utils
+            from datetime import datetime
             
-            logger.info(f"Mount sync: converting {ra_deg:.6f}°, {dec_deg:.6f}° to {ra_str}, {dec_str}")
+            # Get current datetime for epoch conversion
+            current_dt = datetime.now()
+            logger.info(f"Mount sync: Current datetime: {current_dt}")
+            
+            # Convert from J2000 to current epoch
+            from skyfield.positionlib import position_of_radec
+            _p = position_of_radec(ra_hours=ra_deg/15.0, dec_degrees=dec_deg, epoch=sf_utils.ts.J2000)
+            current_ra_h, current_dec, _ = _p.radec(epoch=sf_utils.ts.from_datetime(current_dt))
+            
+            # Convert to degrees
+            current_ra_deg = current_ra_h._degrees
+            current_dec_deg = current_dec.degrees
+            
+            logger.info(f"Mount sync: J2000 coordinates: {ra_deg:.6f}°, {dec_deg:.6f}°")
+            logger.info(f"Mount sync: Current epoch coordinates: {current_ra_deg:.6f}°, {current_dec_deg:.6f}°")
+            
+            # Convert degrees to mount format (HH:MM:SS and sDD:MM:SS)
+            ra_str = self._degrees_to_ra(current_ra_deg)
+            dec_str = self._degrees_to_dec(current_dec_deg)
+            
+            logger.info(f"Mount sync: converting {current_ra_deg:.6f}°, {current_dec_deg:.6f}° to {ra_str}, {dec_str}")
             
             # Set the commanded coordinates first
             ra_set_command = f":Sr{ra_str}#"
@@ -119,12 +141,25 @@ class AstroPhysicsMount:
                     logger.info(f"Mount position after sync: RA={new_ra:.2f}°, DEC={new_dec:.2f}°")
                     
                     # Check if position changed significantly
-                    ra_diff = abs(new_ra - ra_deg)
-                    dec_diff = abs(new_dec - dec_deg)
+                    # Check if mount position changed significantly
+                    # Note: mount position is in current epoch, but ra_deg/dec_deg are in J2000
+                    # Convert mount position to J2000 for comparison
+                    mount_p = position_of_radec(ra_hours=new_ra/15.0, dec_degrees=new_dec, epoch=sf_utils.ts.from_datetime(current_dt))
+                    mount_ra_j2000, mount_dec_j2000, _ = mount_p.radec(epoch=sf_utils.ts.J2000)
+                    mount_ra_j2000_deg = mount_ra_j2000._degrees
+                    mount_dec_j2000_deg = mount_dec_j2000.degrees
+                    
+                    logger.info(f"Mount sync: Mount position (current epoch): RA={new_ra:.2f}°, DEC={new_dec:.2f}°")
+                    logger.info(f"Mount sync: Mount position (J2000): RA={mount_ra_j2000_deg:.2f}°, DEC={mount_dec_j2000_deg:.2f}°")
+                    
+                    ra_diff = abs(mount_ra_j2000_deg - ra_deg)
+                    dec_diff = abs(mount_dec_j2000_deg - dec_deg)
                     if ra_diff > 1.0 or dec_diff > 1.0:
                         logger.warning(f"Mount position did not update properly after sync!")
-                        logger.warning(f"Expected: RA={ra_deg:.2f}°, DEC={dec_deg:.2f}°")
-                        logger.warning(f"Actual: RA={new_ra:.2f}°, DEC={new_dec:.2f}°")
+                        logger.warning(f"Expected (J2000): RA={ra_deg:.2f}°, DEC={dec_deg:.2f}°")
+                        logger.warning(f"Actual (J2000): RA={mount_ra_j2000_deg:.2f}°, DEC={mount_dec_j2000_deg:.2f}°")
+                    else:
+                        logger.info(f"Mount position updated correctly! Difference: RA={ra_diff:.2f}°, DEC={dec_diff:.2f}°")
                 
                 return True, "Sync successful"
             else:
