@@ -38,6 +38,7 @@ from PiFinder import pos_server
 from PiFinder import utils
 from PiFinder import server
 from PiFinder import keyboard_interface
+from PiFinder import mount_poller
 
 from PiFinder.multiproclogging import MultiprocLogging
 from PiFinder.catalogs import CatalogBuilder, CatalogFilter, Catalogs
@@ -446,6 +447,17 @@ def main(
             args=(shared_state, ui_queue, posserver_logqueue),
         )
         posserver_process.start()
+
+        # Mount Poller
+        console.write("   Mount Poller")
+        logger.info("   Mount Poller")
+        console.update()
+        mount_poller_process = Process(
+            name="MountPoller",
+            target=mount_poller.mount_poller_service,
+            args=(shared_state,),
+        )
+        mount_poller_process.start()
 
         # Initialize Catalogs
         console.write("   Catalogs")

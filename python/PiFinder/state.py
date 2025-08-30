@@ -221,6 +221,7 @@ class SharedStateObj:
         self.__solve_pixel = config.Config().get_option("solve_pixel")
         self.__arch = None
         self.__camera_align = False
+        self.__mount_position = None  # Current mount position (RA, DEC) in degrees
         # Are we prepared to do alt/az math
         # We need gps lock and datetime
         self.__tz_finder = TimezoneFinder()
@@ -297,6 +298,14 @@ class SharedStateObj:
         if v:
             v.timezone = self.__tz_finder.timezone_at(lat=v.lat, lng=v.lon)
         self.__location = v
+
+    def mount_position(self):
+        """Return the current mount position (RA, DEC) in degrees"""
+        return self.__mount_position
+
+    def set_mount_position(self, v):
+        """Set the current mount position (RA, DEC) in degrees"""
+        self.__mount_position = v
 
     def last_image_metadata(self):
         return self.__last_image_metadata
